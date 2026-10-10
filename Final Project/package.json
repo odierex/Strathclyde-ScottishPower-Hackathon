@@ -1,0 +1,12 @@
+{
+  "name": "strathhack-incident-room",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ScottishPower cyber awareness Incident Room hackathon prototype",
+  "scripts": {
+    "start": "node 1-foundation/starter/serve.mjs",
+    "test": "node --test"
+  },
+  "engines": {"node": ">=20"}
+}
