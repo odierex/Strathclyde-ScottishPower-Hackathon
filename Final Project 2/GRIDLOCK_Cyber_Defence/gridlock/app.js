@@ -62,12 +62,88 @@ function systemInspector(){const insight=nodeInsight(selectedNode,game),{node,ph
 function threatPanel(){const p=game.phaseIndex,phase=game.currentPhase,metrics=phaseMetrics(game,p);
  return `<section class="info-card attack-card"><span class="eyebrow warn">INCIDENT ${PHASE_TIMES[p]}</span><h2>${safe(phase.title)}</h2><p>${safe(phase.story)}</p><div class="attack-stats"><div><span>Prevention points</span><b>${metrics.prevent}</b></div><div><span>Detection points</span><b>${metrics.detect}</b></div><div><span>Response points</span><b>${metrics.respond}</b></div></div><div class="learning-note">The attacker continues through all four phases by design. Detection reveals activity; it does not automatically stop it.</div></section>`;
 }
-function questionCard(){
- const q=game.currentQuestion,answer=game.currentAnswer;
- return `<section class="info-card quiz"><div class="section-bar"><span>HUMAN DECISION ${game.questionIndex+1} / ${PHASE_QUESTIONS[game.phaseIndex].length}</span><span id="seconds" class="timer">${answer?'ANSWERED':secondsLeft+'s'}</span></div>
- <span class="topic">${safe(q.category)} · ${safe(q.tier_label)}</span><h3>${safe(q.question)}</h3><div class="options">${Object.entries(q.options).map(([id,text])=>`<button type="button" class="answer ${selectedAnswer===id||answer?.selected===id?'selected':''} ${answer&&q.correct===id?'correct':''}" data-action="choose" data-choice="${id}" aria-pressed="${selectedAnswer===id||answer?.selected===id}" ${answer?'disabled':''}><b>${id}</b><span>${safe(text)}</span></button>`).join('')}</div>
- ${answer?`<div class="feedback"><b>${answer.correct?`Correct! +${answer.points}`:answer.selected===null?'Time expired • +0':'Not secure • +0'}</b><p>${safe(answer.explanation)}</p><small>Correct option: ${q.correct}</small></div><button class="primary full" data-action="next-question">${game.questionIndex===PHASE_QUESTIONS[game.phaseIndex].length-1?'VIEW PHASE RESULTS':'NEXT DECISION'} →</button>`:`<div class="quiz-actions"><button class="secondary" data-action="pause">${paused?'RESUME':'PAUSE'} TIMER</button><button class="primary" data-action="submit" ${!selectedAnswer?'disabled':''}>SUBMIT ANSWER →</button></div>`}
- </section>`;
+
+function questionCard() {
+ const q = game.currentQuestion;
+ const answer = game.currentAnswer;
+
+ return `
+    <section class="info-card quiz">
+      <div class="section-bar">
+        <span>QUESTION ${game.questionIndex + 1} / ${PHASE_QUESTIONS[game.phaseIndex].length}</span>
+        <span id="seconds" class="timer">
+          ${answer ? 'ANSWERED' : secondsLeft + 's'}
+        </span>
+      </div>
+
+      <span class="topic">
+        ${safe(q.category)} · ${safe(q.tier_label)}
+      </span>
+
+      <h3>${safe(q.question)}</h3>
+
+      <div class="answer-dropzone"
+           data-action="drop-answer"
+           aria-label="Drop your answer here">
+        <span>YOUR ANSWER</span>
+        <strong>${selectedAnswer ? selectedAnswer : 'DRAG A LETTER HERE'}</strong>
+        <small>Drag A, B, C or D into this box</small>
+      </div>
+
+      <p class="drag-instruction">
+        Choose your answer by dragging a letter below.
+      </p>
+
+      <div class="options">
+        ${Object.entries(q.options).map(([id, text]) => `
+          <button
+            type="button"
+            class="answer ${selectedAnswer === id || answer?.selected === id ? 'selected' : ''} ${answer && q.correct === id ? 'correct' : ''}"
+            data-action="choose"
+            data-choice="${id}"
+            draggable="${!answer}"
+            aria-pressed="${selectedAnswer === id}"
+            ${answer ? 'disabled' : ''}>
+
+            <b>${id}</b>
+            <span>${safe(text)}</span>
+          </button>
+        `).join('')}
+      </div>
+
+      ${answer ? `
+        <div class="feedback">
+          <b>
+            ${answer.correct
+     ? `Correct! +${answer.points}`
+     : answer.selected === null
+         ? 'Time expired • +0'
+         : 'Not secure • +0'}
+          </b>
+          <p>${safe(answer.explanation)}</p>
+          <small>Correct option: ${q.correct}</small>
+        </div>
+
+        <button class="primary full" data-action="next-question">
+          ${game.questionIndex === PHASE_QUESTIONS[game.phaseIndex].length - 1
+     ? 'VIEW PHASE RESULTS'
+     : 'NEXT DECISION'} →
+        </button>
+      ` : `
+        <div class="quiz-actions">
+          <button class="secondary" data-action="pause">
+            ${paused ? 'RESUME' : 'PAUSE'} TIMER
+          </button>
+
+          <button class="primary"
+                  data-action="submit"
+                  ${!selectedAnswer ? 'disabled' : ''}>
+            SUBMIT ANSWER →
+          </button>
+        </div>
+      `}
+    </section>
+  `;
 }
 function briefingPanel(){return `<section class="info-card briefing"><span class="eyebrow">SECURITY BRIEFING</span><h3>Follow the intrusion.</h3><p>Inspect the map and select any system to understand its role. Then begin the human-decision checkpoint.</p><div class="data-card"><span>THIS PHASE'S CONTROL SCORE</span><strong>${game.phaseResult.score} pts</strong></div><button class="primary full" data-action="start-quiz">BEGIN DECISIONS →</button></section>`;}
 function phaseSummaryPanel(){const p=game.phaseIndex,result=game.phaseResult,answers=game.answers.filter(a=>a.phaseId===game.currentPhase.id),qs=answers.reduce((s,a)=>s+a.points,0);return `<section class="info-card briefing"><span class="eyebrow">PHASE ${p+1} COMPLETE</span><h3>Defence review</h3><div class="two-stats"><div><span>Controls</span><b>${result.score}</b></div><div><span>People</span><b>${qs}</b></div></div><p>${answers.filter(a=>a.correct).length} of ${answers.length} decisions answered securely.</p><div class="contrib-review">${[...result.contributions].sort((a,b)=>b.points-a.points).slice(0,4).map(row=>`<div><span>${safe(game.challenge.controls.find(c=>c.id===row.id)?.name)}</span><b>+${row.points}</b></div>`).join('')}</div><button class="primary full" data-action="advance">${p===3?'FINAL INCIDENT REPORT':'ADVANCE TO PHASE '+(p+2)} →</button></section>`;}
@@ -107,6 +183,47 @@ function render(){
  startTimer();
 }
 function changeView(target){if(target==='report'&&game.screen!=='results')throw Error('Complete the simulation to unlock your report.');view=target;render();window.scrollTo({top:0,behavior:'instant'});}
+root.addEventListener('dragstart', e => {
+ const answerButton = e.target.closest(
+     'button[data-action="choose"]'
+ );
+
+ if (!answerButton || game.currentAnswer) return;
+
+ e.dataTransfer.setData(
+     'text/plain',
+     answerButton.dataset.choice
+ );
+
+ e.dataTransfer.effectAllowed = 'copy';
+});
+
+root.addEventListener('dragover', e => {
+ const dropzone = e.target.closest('.answer-dropzone');
+
+ if (!dropzone || game.currentAnswer) return;
+
+ e.preventDefault();
+ e.dataTransfer.dropEffect = 'copy';
+});
+
+root.addEventListener('drop', e => {
+ const dropzone = e.target.closest('.answer-dropzone');
+
+ if (!dropzone || game.currentAnswer) return;
+
+ e.preventDefault();
+
+ const choice = e.dataTransfer.getData('text/plain');
+ const q = game.currentQuestion;
+
+ if (q && Object.prototype.hasOwnProperty.call(q.options, choice)) {
+  selectedAnswer = choice;
+  render();
+ }
+});
+
+
 root.addEventListener('click', e=>{
  const button=e.target.closest('button[data-action]');if(!button||button.disabled||!game)return;
  try{
