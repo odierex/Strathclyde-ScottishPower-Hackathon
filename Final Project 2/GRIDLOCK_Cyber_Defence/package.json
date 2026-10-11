@@ -1,9 +1,0 @@
-{
-  "name":"gridlock-cyber-defence",
-  "version":"1.0.0",
-  "private":true,
-  "type":"module",
-  "description":"GRIDLOCK: ScottishPower StrathHack26 Cyber Awareness – Map Room plus Rewind & Compare",
-  "scripts":{"start":"node 1-foundation/starter/serve.mjs","test":"node --test"},
-  "engines":{"node":">=20"}
-}
