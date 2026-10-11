@@ -31,8 +31,8 @@ function startTimer(){
 function notice(message){toast=message;render();setTimeout(()=>{if(toast===message){toast='';document.querySelector('#notice')?.remove();}},4500);}
 function titlebar(){
  const step=game.result?Math.min(3,game.phaseIndex):0;
- return `<header class="topbar"><div class="brand"><span class="brand-mark" aria-hidden="true">◈</span><div><strong>GRID<span>LOCK</span></strong><small>CYBER DEFENCE • STRATHHACK 26</small></div></div><div class="masthead"><strong>${safe(GAME_CONFIG.businessName)}</strong><small>${safe(GAME_CONFIG.tagline)}</small></div><div class="top-status"><span>${game.result?'LIVE SIMULATION':'PREPARATION'}</span><strong>${game.result?`PHASE ${step+1} / 4`:'£3M DEFENCE BUDGET'}</strong><div class="top-track">${game.challenge.phases.map((p,i)=>`<i class="${game.result && i<=step?'on':''}"></i>`).join('')}</div></div></header>`;
-}
+ return `<header class="topbar"><div class="brand"><img class="brand-logo" src="${safe(GAME_CONFIG.logo)}" alt="${safe(GAME_CONFIG.logoAlt)}"><div><strong>GRID<span>LOCK</span></strong><small>CYBER DEFENCE • STRATHHACK 26</small></div></div><div class="masthead"><strong>${safe(GAME_CONFIG.businessName)}</strong><small>${safe(GAME_CONFIG.tagline)}</small></div><div class="top-status"><span>${game.result?'LIVE SIMULATION':'PREPARATION'}</span><strong>${game.result?`PHASE ${step+1} / 4`:'£3M DEFENCE BUDGET'}</strong><div class="top-track">${game.challenge.phases.map((p,i)=>`<i class="${game.result && i<=step?'on':''}"></i>`).join('')}</div></div></header>`;
+ }
 function nav(){return `<nav class="sidebar" aria-label="Primary navigation"><div class="sidebar-label">COMMAND CENTRE</div>
  ${[
   ['map','Network Map','⬡'],['controls','Security Controls','◈'],['status','Company Status','◉'],['report','Final Report','▤'],
