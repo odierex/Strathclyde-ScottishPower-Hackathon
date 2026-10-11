@@ -54,9 +54,18 @@ function controlsPage(){
 function svgLines(){return `<svg viewBox="0 0 600 402" class="network-wires" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="wire" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#187d85"/><stop offset="1" stop-color="#2d556b"/></linearGradient></defs>
  ${LINKS.map(([a,b],i)=>{const A=SYSTEMS.find(n=>n.id===a),B=SYSTEMS.find(n=>n.id===b);const active=game.result && i<=game.phaseIndex;const restore=game.result && i===4 && game.phaseIndex===3;return `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" class="wire ${active?'traced':restore?'restore':''}"/>`;}).join('')}
  </svg>`;}
+ const ART='../1-foundation/artwork/';
+const NODE_ICONS={
+  mail:`<img src="${ART}everyday/email.png" alt="">`,
+  laptop:`<img src="${ART}everyday/laptop.png" alt="">`,
+  office:`<img src="${ART}icons/D5_network_behaviour_analysis.png" alt="">`,
+  identity:`<img src="${ART}icons/D3_threat_hunting_and_honeypots.png" alt="">`,
+  files:`<img src="${ART}icons/R6_incident_response_retainer.png" alt="">`,
+  backup:`<img src="${ART}icons/R4_backup_restores.png" alt="">`,
+};
 function networkMap(){return `<div class="map-container"><div class="map-toolbar"><span><i class="pulse-dot"></i> FICTIONAL BUSINESS NETWORK</span><span>${game.result?'ATTACK PATH • PHASE '+(game.phaseIndex+1):'SYSTEMS ONLINE'}</span></div>
  <div class="map-canvas" role="group" aria-label="Selectable business systems and the simulated attack path">${svgLines()}
- ${SYSTEMS.map((sys)=>{const state=nodeState(sys.id,game);return `<button type="button" data-action="node" data-node="${sys.id}" aria-pressed="${selectedNode===sys.id}" class="system-node ${state} ${selectedNode===sys.id?'chosen':''}" style="left:${sys.x/600*100}%;top:${sys.y/402*100}%"><span class="node-icon" aria-hidden="true">${{mail:'✉',laptop:'▣',office:'⬡',identity:'♙',files:'▤',backup:'↺'}[sys.id]}</span><span class="node-name">${safe(sys.name)}</span><small>${state==='active'?'ATTACK HERE':state==='visited'?'ATTACK PATH':state==='recovery'?'RECOVERY':'SYSTEM'}</small></button>`;}).join('')}
+ ${SYSTEMS.map((sys)=>{const state=nodeState(sys.id,game);return `<button type="button" data-action="node" data-node="${sys.id}" aria-pressed="${selectedNode===sys.id}" class="system-node ${state} ${selectedNode===sys.id?'chosen':''}" style="left:${sys.x/600*100}%;top:${sys.y/402*100}%"><span class="node-icon" aria-hidden="true">${NODE_ICONS[sys.id]}</span><span class="node-name">${safe(sys.name)}</span><small>${state==='active'?'ATTACK HERE':state==='visited'?'ATTACK PATH':state==='recovery'?'RECOVERY':'SYSTEM'}</small></button>`;}).join('')}
  </div><div class="map-legend"><span><i class="legend-dot danger"></i> Current attack</span><span><i class="legend-dot trail"></i> Attacker path</span><span><i class="legend-dot safe"></i> Recovery / unvisited</span></div></div>`;}
 function systemInspector(){const insight=nodeInsight(selectedNode,game),{node,phase,metrics,contributions}=insight;
  return `<section class="info-card inspector"><div class="section-bar"><span>SELECTED SYSTEM</span><span class="tiny-code">${safe(node.id.toUpperCase())}</span></div><h3>${safe(node.name)}</h3><p>${safe(node.detail)}</p><div class="inspector-meta"><span>Linked incident</span><strong>Phase ${node.phase+1}: ${safe(PHASE_NAMES[node.phase])}</strong></div>
