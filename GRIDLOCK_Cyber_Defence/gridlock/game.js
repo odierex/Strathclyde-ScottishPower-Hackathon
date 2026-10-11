@@ -14,15 +14,22 @@ export const QUESTION_SECONDS = 30;
 export const CATEGORIES = ['Prevent', 'Detect', 'Respond'];
 
 export class GridlockGame {
-  constructor(challenge, questionBank) {
+  constructor(challenge, questionBank, options = {}) {
     validateData(challenge);
     if (!Array.isArray(questionBank?.questions)) throw new Error('Question bank missing questions.');
+    const setting = options.gameplay || {};
+    this.phaseQuestions = structuredClone(setting.phaseQuestions ?? PHASE_QUESTIONS);
+    this.pointsPerCorrectAnswer = setting.pointsPerCorrectAnswer ?? POINTS_PER_CORRECT_ANSWER;
+    this.questionSeconds = setting.questionSeconds ?? QUESTION_SECONDS;
+    this.displayConfig = options.branding || null;
+    if (!Number.isSafeInteger(this.pointsPerCorrectAnswer) || this.pointsPerCorrectAnswer < 0) throw Error('Invalid question points.');
+    if (!Number.isSafeInteger(this.questionSeconds) || this.questionSeconds < 10) throw Error('Invalid question duration.');
     this.challenge = challenge;
     this.questions = new Map(questionBank.questions.map(question => [question.id, question]));
-    for (let phase = 0; phase < PHASE_QUESTIONS.length; phase++) {
-      for (const id of PHASE_QUESTIONS[phase]) {
+    for (let phase = 0; phase < this.phaseQuestions.length; phase++) {
+      for (const id of this.phaseQuestions[phase]) {
         const question = this.questions.get(id);
-        if (!question || question.phase_id !== challenge.phases[phase].id) {
+        if (!question || (question.phase_id !== null && question.phase_id !== challenge.phases[phase].id)) {
           throw new Error(`The question ${id} does not match phase ${phase + 1}.`);
         }
       }
@@ -55,7 +62,7 @@ export class GridlockGame {
 
   get currentQuestion() {
     if (this.screen !== 'checkpoint') return null;
-    return this.questions.get(PHASE_QUESTIONS[this.phaseIndex][this.questionIndex]);
+    return this.questions.get(this.phaseQuestions[this.phaseIndex][this.questionIndex]);
   }
 
   get phaseResult() { return this.result?.phases[this.phaseIndex] ?? null; }
@@ -75,7 +82,7 @@ export class GridlockGame {
       return;
     }
     if (this.spent + control.cost > this.challenge.budget) {
-      throw new Error(`${control.name} exceeds your £3,000,000 budget.`);
+      throw new Error(`${control.name} exceeds your £${this.challenge.budget.toLocaleString('en-GB')} budget.`);
     }
     this.selected.push(id);
   }
@@ -99,7 +106,7 @@ export class GridlockGame {
     if (letter !== null && !['A', 'B', 'C', 'D'].includes(letter)) throw new Error('Invalid answer.');
     const q = this.currentQuestion;
     const correct = letter !== null && q.correct === letter;
-    const points = correct ? POINTS_PER_CORRECT_ANSWER : 0;
+    const points = correct ? this.pointsPerCorrectAnswer : 0;
     this.currentAnswer = {id: q.id, selected: letter, correct, points, explanation: q.explanation};
     this.answers.push({...this.currentAnswer, phaseId: this.currentPhase.id});
     this.behaviourScore += points;
@@ -110,7 +117,7 @@ export class GridlockGame {
     if (this.screen !== 'checkpoint' || !this.currentAnswer) {
       throw new Error('Answer the question before continuing.');
     }
-    if (this.questionIndex + 1 < PHASE_QUESTIONS[this.phaseIndex].length) {
+    if (this.questionIndex + 1 < this.phaseQuestions[this.phaseIndex].length) {
       this.questionIndex++;
       this.currentAnswer = null;
     } else {

@@ -1,5 +1,12 @@
 # GRIDLOCK: Cyber Defence — StrathHack26
 
+## Admin Studio (new)
+
+You can change the game configuration without touching the supplied ScottishPower files. With `npm start` running, visit **http://127.0.0.1:8080/admin/index.html** (or use the **Admin Studio** sidebar link). Edit question wording and correct answers, control prices and scores, budget, question timing, game names and more. Press **Save version to disk**. Each save becomes a JSON snapshot in `.gridlock-saves/history/`, while `.gridlock-saves/active.json` is loaded when the game is reopened.
+
+Use **History** to see which fields changed and their previous and new values, download any version, restore a previous version, or restore the original. Source files inside `1-foundation/` are never modified. **The Admin Studio is intended for localhost only and has no login system. Do not expose it publicly.** See [ADMIN_GUIDE.md](ADMIN_GUIDE.md) for the full walkthrough, limitations and backup advice.
+
+
 A complete, locally hosted cyber-awareness game with a **Map Room** theme and a **Rewind & Compare** stretch capability. Built for ScottishPower's approved four-phase fictional ransomware scenario.
 
 **Node.js 20+ required. No packages, accounts, database or keys.** All code runs locally in the browser; Node.js only serves static files.
